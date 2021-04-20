@@ -8,6 +8,7 @@
 - composer
 - monero 
 - dero
+- postman or insomnia
 
 ### Install
 
@@ -52,3 +53,4 @@ https://community.xmr.to/faucet/stagenet <br>
 For dero, ask to the community to fill your testnet's wallet
 
 ### Start the service
+

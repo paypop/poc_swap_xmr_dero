@@ -10,6 +10,7 @@
         "symfony/var-dumper": "^5.2"
     },
     "require": {
-        "vlucas/phpdotenv": "^5.3"
+        "vlucas/phpdotenv": "^5.3",
+        "monolog/monolog": "^2.2"
     }
 }
