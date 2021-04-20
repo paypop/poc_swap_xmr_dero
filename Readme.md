@@ -16,6 +16,7 @@ In a first terminal, clone the repository's folder
 <pre>
 git clone https://github.com/netwarp/poc_swap_xmr_dero
 cd poc_swap_xmr_dero
+cp .env.example .env
 composer install
 </pre>
 
@@ -53,4 +54,6 @@ https://community.xmr.to/faucet/stagenet <br>
 For dero, ask to the community to fill your testnet's wallet
 
 ### Start the service
-
+<pre>
+monero-wallet-rpc.exe --rpc-bind-ip=127.0.0.1 --rpc-bind-port=38083 --disable-rpc-login --log-level=3 --wallet-file=wallet_service --prompt-for-password --stagenet --tx-notify="<b>/absolute/path/to/php /absolute/path/poc_swap_xmr_dero/index.php %s</b>"
+</pre>
