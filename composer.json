@@ -1,0 +1,12 @@
+{
+    "name": "totocaca/swap_xmr_dero",
+    "authors": [
+        {
+            "name": "netwarp",
+            "email": "resethread@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "symfony/var-dumper": "^5.2"
+    }
+}
