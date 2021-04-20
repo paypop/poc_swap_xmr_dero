@@ -8,5 +8,8 @@
     ],
     "require-dev": {
         "symfony/var-dumper": "^5.2"
+    },
+    "require": {
+        "vlucas/phpdotenv": "^5.3"
     }
 }
