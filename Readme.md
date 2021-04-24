@@ -96,6 +96,9 @@ php index.php
 
 Should return: We have receided the dero and sent your monero
 
+### Warning
+Do not test in any mainnet.
+
 ###### Thanks
 Dero address: dERirD3WyQi4udWH7478H66Ryqn3syEU8bywCQEu3k5ULohQRcz4uoXP12NjmN4STmEDbpHZWqa7bPRiHNFPFgTBPmcBpfpJaKT8nKPXJx1Qt
 
