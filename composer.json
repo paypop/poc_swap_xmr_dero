@@ -7,8 +7,11 @@
         }
     ],
     "autoload": {
+        "psr-4": {
+            "Swap\\": "src"
+        },
         "files": [
-            "helpers/helpers.php"
+            "src/helpers/helpers.php"
         ]
     },
     "require-dev": {
