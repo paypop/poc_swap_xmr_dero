@@ -27,6 +27,9 @@ if ( ! ($swap_mode_answer === '1' || $swap_mode_answer === '2') ) {
 $swap = new Swap;
 
 if ($swap_mode_answer === '1') {
+    echo "Send dero to this address: \n";
+
+
     $swap->convertCoinAToCoinB('dero', 'xmr');
 }
 
