@@ -2,14 +2,16 @@
 
 namespace Swap;
 
+use Swap\Market;
+
 class Swap
 {
 
-    function __construct() {
+    function __construct(string $coin_a, string $coin_b) {
 
     }
 
-    public function convertCoinAToCoinB($coin_a, $coin_b) {
+    private function getAddress() {
 
     }
 }

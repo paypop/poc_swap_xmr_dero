@@ -3,6 +3,7 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use Swap\Swap;
+use Swap\WalletService;
 
 if ( ! file_exists('.env')) {
     dd("Create .env file first\ncp .env.example .env");
@@ -23,7 +24,7 @@ $swap_mode_answer = readline($swap_mode_question);
 
 
 if ( ! ($swap_mode_answer === '1' || $swap_mode_answer === '2') ) {
-    dd('you have to chose 1 or 2');
+    return colorLog('you have to chose 1 or 2', 'e');
 }
 
 
@@ -43,20 +44,26 @@ if ($swap_mode_answer === '1') {
 
 if ($swap_mode_answer === '2') {
 
-    $wallet_dero_service = getenv('DERO_WALLET_SERVICE');
-    $wallet_xmr_service = getenv('MONERO_WALLET_SERVICE');
+    $monero_rpc = getenv('MONERO_RPC');
+    $monero_wallet_service = new WalletService($monero_rpc, 'xmr');
+
+    $integrated_address = $monero_wallet_service->makeIntegratedAddress();
+    $integrated_address = $integrated_address->integrated_address;
 
     colorLog('You have some monero, you want some dero', 's');
 
     $dero_wallet_user = readline('Type here your dero address ');
 
     if ( ! $dero_wallet_user) {
-        dd('Your address must be valid and get 95 characters');
+        return colorLog('Your address must be valid and get 66 characters', 'e');
     }
 
-    echo "Send monero to this address: xxx_integrated_address and wait some seconds \n";
-    echo "Then run: php swap-exe.php \n";
-    echo "Wait some seconds, open your dero wallet and check the balance";
+    colorLog('Send monero to this address:');
+    colorLog($integrated_address, 'i');
+    colorLog('Send the transaction and wait for some seconds');
+    colorLog('Then run this command:');
+    colorLog('php swap-exe.php', 's');
+    colorLog('Wait some seconds, open your dero wallet and check the balance');
 }
 
 
