@@ -6,11 +6,9 @@ use PHPUnit\Framework\TestCase;
 
 use Swap\WalletService;
 
-final class WalletTest extends TestCase
+final class WalletMoneroTest extends TestCase
 {
-
     private string $monero_rpc = 'http://localhost:38083/json_rpc';
-
 
     public function testGetAddress()
     {
