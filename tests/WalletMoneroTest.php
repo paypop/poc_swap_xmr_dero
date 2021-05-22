@@ -8,20 +8,11 @@ use Swap\WalletService;
 
 final class WalletTest extends TestCase
 {
-    private string $dero_rpc = 'http://localhost:40403/json_rpc';
 
     private string $monero_rpc = 'http://localhost:38083/json_rpc';
 
-    public function testDeroGetAddress()
-    {
-        $dero_wallet_service = new WalletService($this->dero_rpc, 'dero');
 
-        $result = $dero_wallet_service->getAddress();
-
-        $this->assertObjectHasAttribute('address', $result);
-    }
-
-    public function testMoneroGetAddress()
+    public function testGetAddress()
     {
         $monero_wallet_service = new WalletService($this->monero_rpc, 'xmr');
 
