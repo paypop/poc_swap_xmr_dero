@@ -85,8 +85,27 @@ class WalletService
 
     public function makeIntegratedAddress()
     {
-        return $this->request('make_integrated_address');
-    }
+        $payment_id = random_bytes(8);
+        $payment_id = bin2hex($payment_id);
 
+        if ($this->currency === 'dero') {
+            $params = [
+                'payload_rpc' => [
+                    [
+                        'name' => 'payment_id',
+                        'datatype' => 'S',
+                        'value' => $payment_id
+                    ]
+                ]
+            ];
+        }
+        else if ($this->currency === 'xmr') {
+            $params = [
+                'payment_id' => $payment_id
+            ];
+        }
+
+        return $this->request('make_integrated_address', $params);
+    }
 
 }

@@ -1,15 +1,17 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
+
 
 use Swap\Swap;
 use Swap\WalletService;
+use MongoDB\Client;
 
 if ( ! file_exists('.env')) {
     dd("Create .env file first\ncp .env.example .env");
 }
 
-$dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__ . '/../');
 $dotenv->load();
 
 colorLog('SWAP DERO-XMR', 's');
@@ -22,7 +24,6 @@ colorLog('2) swap xmr -> dero');
 $swap_mode_question = '';
 $swap_mode_answer = readline($swap_mode_question);
 
-
 if ( ! ($swap_mode_answer === '1' || $swap_mode_answer === '2') ) {
     return colorLog('you have to chose 1 or 2', 'e');
 }
@@ -30,11 +31,35 @@ if ( ! ($swap_mode_answer === '1' || $swap_mode_answer === '2') ) {
 
 if ($swap_mode_answer === '1') {
 
-    $wallet_dero_service = getenv('DERO_WALLET_SERVICE');
+    $dero_rpc = getenv('DERO_RPC');
+    $dero_wallet_service = new WalletService($dero_rpc, 'dero');
+
+    $result = $dero_wallet_service->makeIntegratedAddress();
+
+    $integrated_address = $result->integrated_address;
+
+    $payment_id = $result->payload_rpc;
+    $payment_id = $payment_id[0];
+    $payment_id = $payment_id->value;
+
+
+    $data = [
+        'swap' => 'dero xmr',
+        'status' => 'initalized',
+        'payment_id' => $payment_id,
+        'integrated_address' => $integrated_address,
+        'cash_back_address' => '',
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s'),
+    ];
+
+    $collection = (new MongoDB\Client)->exchange_service->transactions;
+    $insert = $collection->insertOne($data);
+
 
     colorLog('You have some dero, you want some monero', 's');
     colorLog('Send some dero to this address', '');
-    colorLog($wallet_dero_service, 'i');
+    colorLog($integrated_address, 'i');
     colorLog('As a comment, type your monero address !', 'e');
     colorLog('Send the transaction and wait for some seconds');
     colorLog('Then run this command:');
@@ -65,5 +90,3 @@ if ($swap_mode_answer === '2') {
     colorLog('php swap-exe.php', 's');
     colorLog('Wait some seconds, open your dero wallet and check the balance');
 }
-
-
