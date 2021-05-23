@@ -31,15 +31,12 @@ final class ConvertTest extends TestCase
 
         $conversion = convertAmountToAtomic((float) 0.000_000_000_001, (int) 1e12);
         $this->assertEquals($conversion, 1);
-
-
     }
 
     public function testConvertToValue() {
         // test Dero
         $conversion = convertAtomicToAmount(100_000, (int) 1e5);
         $this->assertEquals($conversion, 1);
-
 
         dd(convertAtomicToAmount(14933027083, (int) 1e12));
     }
@@ -50,7 +47,7 @@ final class ConvertTest extends TestCase
     }
 
     public function test3() {
-        $result = convertSwapSatToSat(0.00008998, 0.00602557, (int) 1e5, (int) 1e12, 100000);
-        dd(convertFloat($result));
+        $result = convertSwapSatToSat(100000, 2, 200, 1e5, 1e12);
+        dd($result);
     }
 }

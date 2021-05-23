@@ -1,27 +1,24 @@
 <?php
 
-use GuzzleHttp\Client;
-
-function loadMarket() {
-
-}
-
 /**
+ * Convert amount to atomic
+ * Example: convertToAtomin( $amount, 1e5 ) for dero, convertToAtomin( $amount, 1e12 ) for monero
  * @param float $value
  * @param int $atomic
  * @return int
  */
-function convertToAtomic( float $value, int $atomic) : int {
-    return $value * $atomic;
+function convertAmountToAtomic( float $amount, int $atomic_level) : int {
+    return $amount * $atomic_level;
 }
 
 /**
+ * Convert atomic to amount
  * @param float $value
  * @param int $atomic
  * @return float
  */
-function convertToValue(float $value, int $atomic) : float {
-    return $atomic / $value;
+function convertAtomicToAmount(int $amount, int $atomic_level) : float {
+    return $amount / $atomic_level;
 }
 
 function convertFloat($floatAsString)
@@ -35,19 +32,20 @@ function convertFloat($floatAsString)
     return number_format($norm, -intval(substr($e, 1)));
 }
 
-function convertSwapSatToSat(float $value_btc_coin_a, float $value_btc_coin_b, int $sat_level_a, int $sat_level_b, int $sat_received) {
-    $coin_atomic_to_absolute = $sat_received / $sat_level_a;
+function convertSwapSatToSat(int $amount_sat_a, float $price_a, float $price_b, float $sat_level_a, float $sat_level_b): int {
 
-    $value_coin_a_btc = $coin_atomic_to_absolute * $value_btc_coin_a;
+    $amount_a = $amount_sat_a / $sat_level_a;
 
-    $coin_b = $value_coin_a_btc / $value_btc_coin_b;
-    $coin_b_atomic = $coin_b * $sat_level_b;
-    $coin_b_atomic = (int) round($coin_b_atomic);
+    $price_dollar_a = $amount_a * $price_a;
 
-    return $coin_b_atomic;
+    $amount_b = $price_dollar_a / $price_b;
+
+    $amount_b_sat = $amount_b * $sat_level_b;
+
+    return (int) $amount_b_sat;
 }
 
-function colorLog(string $str, string $type = '') {
+function colorLog(string $str, string $type = ''): void {
     switch ($type) {
         case 'e': //error
             echo "\033[31m$str \033[0m\n";
@@ -64,5 +62,12 @@ function colorLog(string $str, string $type = '') {
         default:
             echo "$str \n";
             break;
+    }
+}
+
+function clearScreen(): void {
+    echo "________________________ \n";
+    for ($i = 0; $i < 10; $i++) {
+        echo "\r\n";
     }
 }
