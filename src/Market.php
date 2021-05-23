@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 class Market
 {
     /**
-     * @var string BTC-XMR or BTC-DERO
+     * @var string dero-dero or xmr-monero
      */
     private string $name;
 
@@ -18,26 +18,25 @@ class Market
         $this->name = $name;
 
         $client = new Client([
-            'base_uri' => 'https://tradeogre.com/api/v1/markets',
+            'base_uri' => "https://api.coinpaprika.com/v1/coins/{$name}/markets",
             'timeout'  => 2.0,
             'verify' => false
         ]);
         $response = $client->request('GET', '', []);
         $body = (string) $response->getBody()->getContents();
-        $body = json_decode($body, true);
+        $body = json_decode($body);
 
-        foreach ($body as $key => $value) {
-            if ($name === array_key_first($value)) {
-                $market = $body;
-                $market = $market[$key];
-                $market = $market[$name];
+        $market = array_filter($body, function($exchange) {
+            return $exchange->exchange_name === 'TradeOgre';
+        });
 
-                $this->market = $market;
-            }
-        }
+        $market = array_values($market);
+        $market = $market[0];
+
+        $this->market = (array) $market;
     }
 
     public function price() {
-        return (float) $this->market['price'];
+        return $this->market['quotes']->USD->price;
     }
 }

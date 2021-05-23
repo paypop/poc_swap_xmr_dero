@@ -7,13 +7,16 @@ use Swap\Market;
 
 final class MarketTest extends TestCase
 {
+    // dero-dero or xmr-monero
+    protected $market_name = 'xmr-monero';
+
     public function testMaket() {
-        $market = new Market('BTC-XMR');
+        $market = new Market($this->market_name);
         dd($market);
     }
 
     public function testPrice() {
-        $market = new Market('BTC-XMR');
+        $market = new Market($this->market_name);
         dd($market->price());
     }
 }
