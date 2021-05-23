@@ -83,29 +83,47 @@ class WalletService
         return $this->request($method);
     }
 
-    public function makeIntegratedAddress()
+    public function makeIntegratedAddress($data_info)
     {
-        $payment_id = random_bytes(8);
-        $payment_id = bin2hex($payment_id);
-
         if ($this->currency === 'dero') {
             $params = [
                 'payload_rpc' => [
                     [
-                        'name' => 'payment_id',
+                        'name' => 'monero_address_destination',
                         'datatype' => 'S',
-                        'value' => $payment_id
+                        'value' => $data_info
+                    ],
+                    [
+                        'name' => 'D',
+                        'datatype' => 'U',
+                        'value' => 2525
                     ]
                 ]
             ];
         }
         else if ($this->currency === 'xmr') {
             $params = [
-                'payment_id' => $payment_id
+                'payment_id' => $data_info
             ];
         }
 
         return $this->request('make_integrated_address', $params);
     }
 
+    public function getTransfers()
+    {
+        $params = [
+            "In" => true,
+		    "Out" => false
+        ];
+
+        return $this->request('get_transfers', $params);
+    }
+
+    public function transfer(int $amount, string $address)
+    {
+        $params = compact('amount', 'address');
+
+        return $this->request('transfer', $params);
+    }
 }
