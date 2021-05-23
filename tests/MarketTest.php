@@ -8,7 +8,7 @@ use Swap\Market;
 final class MarketTest extends TestCase
 {
     // dero-dero or xmr-monero
-    protected $market_name = 'xmr-monero';
+    protected $market_name = 'dero-dero';
 
     public function testMaket() {
         $market = new Market($this->market_name);
