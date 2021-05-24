@@ -91,7 +91,15 @@ Send dero from wallet_user to wallet_service.
 Terminal 7:
 <pre>
 cd poc_swap_xmr_dero
-php index.php
+
+# prepare a transaction dero -> monero
+php bin/swap-cli
+
+# prepare a transaction monero -> dero
+php bin/swap-cli
+
+# run the swap
+php bin/swap.exe
 </pre>
 
 Should return: We have receided the dero and sent your monero
