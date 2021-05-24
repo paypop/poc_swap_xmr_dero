@@ -13,6 +13,7 @@ class WalletService
     private string $rpc_address;
 
     /**
+     * dero or xmr
      * @var string
      */
     private string $currency;
@@ -54,7 +55,7 @@ class WalletService
         $client = new Client([
             'base_uri' => $this->rpc_address,
 
-            'timeout' => '2.0'
+            'timeout' => '8.0'
         ]);
 
         $response = $client->request('POST', 'json_rpc', [
@@ -112,18 +113,59 @@ class WalletService
 
     public function getTransfers()
     {
-        $params = [
-            "In" => true,
-		    "Out" => false
-        ];
+        if ($this->currency === 'dero') {
+            $params = [
+                "In" => true,
+                "Out" => false
+            ];
+        }
+        else if ($this->currency === 'xmr') {
+            $params = [
+                "in" => true,
+                "out" => false
+            ];
+        }
+
 
         return $this->request('get_transfers', $params);
     }
 
     public function transfer(int $amount, string $address)
     {
-        $params = compact('amount', 'address');
+        if ($this->currency === 'xmr') {
+            $params = [
+                'destinations' => [
+                    [
+                        'amount' => $amount,
+                        'address' => $address
+                    ]
+                ],
+                'account_index' => 0,
+                'subaddr_indices' => [0],
+                'priority' => 3,
+                'ring_size' => 7,
+                'get_tx_key' => true
+            ];
+        }
+        else if ($this->currency === 'dero') {
+            $params = [
+                'destinations' => [
+                    [
+                        'address' => $address,
+                        'amount' => $amount
+                    ]
+                ]
+            ];
+        }
 
         return $this->request('transfer', $params);
+    }
+
+    public function getPayment(string $payment_id) {
+        // only for monero
+
+        $params = compact('payment_id');
+
+        return $this->request('get_payments', $params);
     }
 }

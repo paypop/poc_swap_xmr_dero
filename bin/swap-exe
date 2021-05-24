@@ -1,0 +1,118 @@
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use MongoDB\Client;
+use MongoDB\BSON\ObjectId;
+use Swap\WalletService;
+use Swap\Market;
+
+$dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__ . '/../');
+$dotenv->load();
+
+# Initialize Dero wallet service
+$dero_rpc = getenv('DERO_RPC');
+$dero_wallet_service = new WalletService($dero_rpc);
+
+# Initialize Dero wallet service
+$monero_rpc = getenv('MONERO_RPC');
+$monero_wallet_service = new WalletService($monero_rpc, 'xmr');
+
+# Initialize database connection
+$collection = (new MongoDB\Client)->exchange_service->transactions;
+$transations = $collection->find();
+
+$dero_all_transfers = $dero_wallet_service->getTransfers();
+$dero_all_transfers = $dero_all_transfers->entries;
+
+$dero_all_transfers = array_filter($dero_all_transfers, function($tx) {
+    $key = $tx->payload_rpc;
+    $key = $key[0];
+    $key = $key->value;
+
+    return strpos($key, '#');
+});
+$dero_all_transfers = array_values($dero_all_transfers);
+
+$monero_all_transfers = $monero_wallet_service->getTransfers();
+$monero_all_transfers = $monero_all_transfers->in;
+
+$market_dero = new Market('dero-dero');
+$market_dero = (float) $market_dero->price();
+
+$market_monero = new Market('xmr-monero');
+$market_monero = $market_monero->price();
+
+foreach ($transations as $transation) {
+
+    if ( $transation->status !== 'initialized') {
+        continue;
+    }
+
+    $id = (string) $transation->_id;
+    $id = new ObjectId($id);
+
+    if ($transation->swap === 'dero xmr') {
+
+       $payment_id = $transation->payment_id;
+       $monero_address = $transation->monero_address_destination;
+
+        # get TX by payment_id
+
+        $tx_wallet = array_filter($dero_all_transfers, function($tx) use($payment_id) {
+            $payload_rpc = $tx->payload_rpc;
+            $payload_rpc = $payload_rpc[0];
+
+            $value = $payload_rpc->value;
+            $value = explode('#', $value);
+
+            return $value[0] === $payment_id;
+        });
+        $tx_wallet = $tx_wallet[0];
+
+        $height = $tx_wallet->height;
+        $topoheight = $tx_wallet->topoheight;
+        $amount = $tx_wallet->amount; // sat
+        $time = $tx_wallet->time;
+        $sender = $tx_wallet->sender;
+
+        $tx_done = compact('height', 'topoheight', 'amount', 'time', 'sender');
+
+        $amount_swap = convertSwapSatToSat($amount, $market_dero, $market_monero, 1e5, 1e12);
+        //dd($amount_swap);
+
+        $monero_wallet_service->transfer($amount_swap, $monero_address);
+
+        colorLog('swap complete', 's');
+    }
+    else if ($transation->swap === 'xmr dero') {
+        $payment_id = $transation->payment_id;
+        $dero_wallet_user = $transation->dero_wallet_user;
+
+        $tx_wallet = $monero_wallet_service->getPayment($payment_id);
+        $tx_wallet = $tx_wallet->payments;
+        $tx_wallet = $tx_wallet[0];
+
+        $amount = $tx_wallet->amount;
+
+        $amount_swap = convertSwapSatToSat($amount, $market_monero, $market_dero, 1e12, 1e5);
+
+        $dero_wallet_service->transfer($amount, $dero_wallet_user);
+
+        colorLog('Transfer xmr dero done', 's');
+    }
+
+    $updateResult  = $collection->updateOne(
+        # search
+        ['_id' => $id],
+
+        #set
+        ['$set' => [
+            'status' => 'complete'
+        ]]
+    );
+
+    colorLog('All done', 's');
+}
+
+

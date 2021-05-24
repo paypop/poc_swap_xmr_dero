@@ -30,25 +30,98 @@ if ( ! ($swap_mode_answer === '1' || $swap_mode_answer === '2') ) {
 
 
 if ($swap_mode_answer === '1') {
-
     $dero_rpc = getenv('DERO_RPC');
     $dero_wallet_service = new WalletService($dero_rpc, 'dero');
 
-    $result = $dero_wallet_service->makeIntegratedAddress();
+    $amount = (float) readline('Amount in dero: ');
+    if ( ! $amount) {
+        dd('Amount must be valid');
+    }
+    $amount = $amount * 1e5;
 
-    $integrated_address = $result->integrated_address;
+    $monero_address_destination = (string) readline('Your monero address: ');
+    if ( ! $monero_address_destination) {
+        dd('Monero address must be valid');
+    }
 
-    $payment_id = $result->payload_rpc;
-    $payment_id = $payment_id[0];
-    $payment_id = $payment_id->value;
+    $integrated_address = $dero_wallet_service->makeIntegratedAddress($monero_address_destination);
+    $integrated_address = $integrated_address->integrated_address;
+
+    $payment_id = random_bytes(8);
+    $payment_id = bin2hex($payment_id);
+
+    $json = [
+        'jsonrpc' => '2.0',
+        'id' => '1',
+        'method' => 'transfer',
+        'params' => [
+            'transfers' => [
+                [
+                    'amount' => $amount,
+                    'destination' => $integrated_address,
+                    'payload_rpc' => [
+                        [
+                            'name' => 'payment_id',
+                            'datatype' => 'S',
+                            'value' => "{$payment_id}#{$monero_address_destination}"
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+    $json = json_encode($json, JSON_PRETTY_PRINT);
+
+    clearScreen();
+
+    colorLog('Copy this object and past it to the user wallet_rpc', 's');
+    colorLog($json, 'i');
+    colorLog('Maybe you need to edit the string: https://jsonformatter.curiousconcept.com', 'w');
 
 
     $data = [
         'swap' => 'dero xmr',
-        'status' => 'initalized',
+        'status' => 'initialized',
+        'payment_id' => $payment_id,
+        'dero_integrated_address' => $integrated_address,
+        'monero_address_destination' => $monero_address_destination,
+        'cash_back_address' => null,
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s'),
+    ];
+
+    $collection = (new MongoDB\Client)->exchange_service->transactions;
+    $collection->insertOne($data);
+}
+
+
+
+
+if ($swap_mode_answer === '2') {
+
+    $monero_rpc = getenv('MONERO_RPC');
+    $monero_wallet_service = new WalletService($monero_rpc, 'xmr');
+
+    $result = $monero_wallet_service->makeIntegratedAddress(bin2hex(random_bytes(8)));
+
+    $integrated_address = $result->integrated_address;
+    $payment_id = $result->payment_id;
+
+    $dero_wallet_user = readline('Type here your dero address ');
+    if ( ! $dero_wallet_user) {
+        return colorLog('Your address must be valid and get 66 characters', 'e');
+    }
+
+    $cash_back_address = readline('Type here your monero address for cash back ');
+
+    $data = [
+        'swap' => 'xmr dero',
+        'status' => 'initialized',
         'payment_id' => $payment_id,
         'integrated_address' => $integrated_address,
-        'cash_back_address' => '',
+        'dero_wallet_user' => $dero_wallet_user,
+        'cash_back_address' => $cash_back_address,
         'created_at' => date('Y-m-d H:i:s'),
         'updated_at' => date('Y-m-d H:i:s'),
     ];
@@ -56,37 +129,12 @@ if ($swap_mode_answer === '1') {
     $collection = (new MongoDB\Client)->exchange_service->transactions;
     $insert = $collection->insertOne($data);
 
-
-    colorLog('You have some dero, you want some monero', 's');
-    colorLog('Send some dero to this address', '');
-    colorLog($integrated_address, 'i');
-    colorLog('As a comment, type your monero address !', 'e');
-    colorLog('Send the transaction and wait for some seconds');
-    colorLog('Then run this command:');
-    colorLog('php swap-exe.php', 's');
-    colorLog('Wait some seconds, open your monero wallet and check the balance');
-}
-
-if ($swap_mode_answer === '2') {
-
-    $monero_rpc = getenv('MONERO_RPC');
-    $monero_wallet_service = new WalletService($monero_rpc, 'xmr');
-
-    $integrated_address = $monero_wallet_service->makeIntegratedAddress();
-    $integrated_address = $integrated_address->integrated_address;
-
     colorLog('You have some monero, you want some dero', 's');
-
-    $dero_wallet_user = readline('Type here your dero address ');
-
-    if ( ! $dero_wallet_user) {
-        return colorLog('Your address must be valid and get 66 characters', 'e');
-    }
 
     colorLog('Send monero to this address:');
     colorLog($integrated_address, 'i');
     colorLog('Send the transaction and wait for some seconds');
     colorLog('Then run this command:');
-    colorLog('php swap-exe.php', 's');
+    colorLog('php bin/swap-exe.php', 's');
     colorLog('Wait some seconds, open your dero wallet and check the balance');
 }
